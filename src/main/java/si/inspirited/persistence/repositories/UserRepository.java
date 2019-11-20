@@ -6,4 +6,6 @@ import si.inspirited.persistence.model.User;
 
 @RepositoryRestResource(path = "users", collectionResourceRel = "users")
 public interface UserRepository extends PagingAndSortingRepository<User, Long> {
+
+    User findByLogin(String login);
 }

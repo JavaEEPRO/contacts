@@ -38,4 +38,12 @@ public class LoginAttemptService {
         attempts++;
         attemptsCache.put(key, attempts);
     }
+
+    boolean isBlocked(final String key) {
+        try {
+            return attemptsCache.get(key) >= MAX_ATTEMPT;
+        } catch (final ExecutionException e) {
+            return false;
+        }
+    }
 }

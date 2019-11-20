@@ -8,7 +8,6 @@ import java.util.Collection;
 
 @Entity
 @Data
-@NoArgsConstructor
 public class Role implements GrantedAuthority {
 
     @Id
@@ -23,5 +22,18 @@ public class Role implements GrantedAuthority {
     @Override
     public String getAuthority() {
         return name;
+    }
+
+    @ManyToMany
+    @JoinTable(name = "roles_privileges", joinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "privilege_id", referencedColumnName = "id"))
+    private Collection<Privilege> privileges;
+
+    public Role() {
+        super();
+    }
+
+    public Role(final String name) {
+        super();
+        this.name = name;
     }
 }
