@@ -6,4 +6,6 @@ import si.inspirited.persistence.model.Privilege;
 
 @Repository
 public interface PrivilegeRepository extends PagingAndSortingRepository<Privilege, Long> {
+
+    Privilege findByName(String name);
 }

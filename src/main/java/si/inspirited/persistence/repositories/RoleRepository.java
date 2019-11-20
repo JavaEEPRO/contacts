@@ -6,4 +6,6 @@ import si.inspirited.persistence.model.Role;
 
 @Repository
 public interface RoleRepository extends PagingAndSortingRepository<Role, Long> {
+
+    Role findByName(String name);
 }
