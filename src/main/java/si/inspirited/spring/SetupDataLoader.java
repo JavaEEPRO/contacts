@@ -42,14 +42,15 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
         }
 
         // create initial privileges
+        final Privilege userPrivilege = createPrivilegeIfNotFound("USER_PRIVILEGE");
         final Privilege readPrivilege = createPrivilegeIfNotFound("READ_PRIVILEGE");
         final Privilege writePrivilege = createPrivilegeIfNotFound("WRITE_PRIVILEGE");
         final Privilege passwordPrivilege = createPrivilegeIfNotFound("CHANGE_PASSWORD_PRIVILEGE");
         final Privilege exploreAllGroupsPrivilege = createPrivilegeIfNotFound("EXPLORE_ALL_GROUPS_PRIVILEGE");
 
         // create initial roles
-        final List<Privilege> adminPrivileges = new ArrayList<Privilege>(Arrays.asList(readPrivilege, writePrivilege, passwordPrivilege, exploreAllGroupsPrivilege));
-        final List<Privilege> userPrivileges = new ArrayList<Privilege>(Arrays.asList(readPrivilege, passwordPrivilege));
+        final List<Privilege> adminPrivileges = new ArrayList<Privilege>(Arrays.asList(userPrivilege, readPrivilege, writePrivilege, passwordPrivilege, exploreAllGroupsPrivilege));
+        final List<Privilege> userPrivileges = new ArrayList<Privilege>(Arrays.asList(userPrivilege, readPrivilege, passwordPrivilege));
         final Role adminRole = createRoleIfNotFound("ROLE_ADMIN", adminPrivileges);
         final Role userRole = createRoleIfNotFound("ROLE_USER", userPrivileges);
 

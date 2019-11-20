@@ -21,6 +21,9 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.rememberme.InMemoryTokenRepositoryImpl;
+import org.springframework.security.web.csrf.CsrfFilter;
+import org.springframework.web.context.request.RequestContextListener;
+import org.springframework.web.filter.RequestContextFilter;
 import si.inspirited.security.*;
 
 @Configuration
@@ -67,6 +70,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(final HttpSecurity http) throws Exception {
         http
                 .csrf().disable()
+                .addFilterAfter(requestContextFilter(), CsrfFilter.class)
                 .authorizeRequests()
 
                 .antMatchers("/users", "/login" , "/status").permitAll()
@@ -135,5 +139,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public CustomLoginAuthenticationSuccessHandler customLoginAuthenticationSuccessHandler() {
         return new CustomLoginAuthenticationSuccessHandler();
+    }
+
+    @Bean
+    RequestContextFilter requestContextFilter() {
+        return new CustomRequestContextFilter();
     }
 }
