@@ -10,6 +10,7 @@ import java.util.Collection;
 public class Privilege implements Serializable {
 
     @Id
+    @Column(unique = true, nullable = false)
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 

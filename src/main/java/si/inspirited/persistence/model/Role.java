@@ -11,6 +11,7 @@ import java.util.Collection;
 public class Role implements GrantedAuthority {
 
     @Id
+    @Column(unique = true, nullable = false)
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 

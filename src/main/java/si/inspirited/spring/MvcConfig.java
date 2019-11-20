@@ -18,20 +18,20 @@ public class MvcConfig implements WebMvcConfigurer {
         super();
     }
 
-    @Override
-    public void addViewControllers(final ViewControllerRegistry registry) {
-        registry.addViewController("/users");
-        registry.addViewController("/login");
-        registry.addViewController("/groups");
-        registry.addViewController("/status");
-
-        registry.addViewController("/user");
-        registry.addViewController("/contacts");
-        registry.addViewController("/contacts/find");
-
-        registry.addViewController("/groups/{groupId}/contacts");
-        registry.addViewController("/groups/{groupId}");
-    }
+//    @Override
+//    public void addViewControllers(final ViewControllerRegistry registry) {
+//        registry.addViewController("/users");
+//        registry.addViewController("/login");
+//        registry.addViewController("/groups");
+//        registry.addViewController("/status");
+//
+//        registry.addViewController("/user");
+//        registry.addViewController("/contacts");
+//        registry.addViewController("/contacts/find");
+//
+//        registry.addViewController("/groups/{groupId}/contacts");
+//        registry.addViewController("/groups/{groupId}");
+//    }
 
     @Override
     public void configureDefaultServletHandling(final DefaultServletHandlerConfigurer configurer) {

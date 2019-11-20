@@ -21,7 +21,6 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.rememberme.InMemoryTokenRepositoryImpl;
-import si.inspirited.persistence.repositories.UserRepository;
 import si.inspirited.security.*;
 
 @Configuration
@@ -43,9 +42,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private CustomWebAuthenticationDetailsSource authenticationDetailsSource;
-
-    @Autowired
-    private UserRepository userRepository;
 
     public SecurityConfig() {
         super();
@@ -73,7 +69,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().disable()
                 .authorizeRequests()
 
-                .antMatchers("/users", "/login" , "/status").permitAll()//hasRole("USER")
+                .antMatchers("/users", "/login" , "/status").permitAll()
                 .antMatchers( "/contacts", "/groups" , "/group/{groupId}/contacts" , "/groups/{groupId}").hasAuthority("USER_PRIVILEGE")
                 .antMatchers("/groups").hasAuthority("EXPLORE_ALL_GROUPS_PRIVILEGE")
 
@@ -81,9 +77,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
                 .and()
                 .formLogin()
-                .loginPage("/login")
+                //.loginPage("/login")
                 .defaultSuccessUrl("/status")
-                .failureUrl("/login?error=true")
+                //.failureUrl("/login?error=true")
 
                 .successHandler(myAuthenticationSuccessHandler)
                 .failureHandler(authenticationFailureHandler)
