@@ -1,12 +1,15 @@
 package si.inspirited.persistence.model;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Collection;
 
 @Entity
 @Data
+@NoArgsConstructor
 public class User implements Serializable {
 
     @Id

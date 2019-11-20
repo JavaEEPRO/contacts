@@ -1,6 +1,7 @@
 package si.inspirited.persistence.model;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -10,6 +11,7 @@ import java.io.Serializable;
 
 @Entity
 @Data
+@NoArgsConstructor
 public class Contact implements Serializable {
 
     @Id
