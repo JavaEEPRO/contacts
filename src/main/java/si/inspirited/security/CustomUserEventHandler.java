@@ -22,6 +22,7 @@ public class CustomUserEventHandler {
     @HandleBeforeCreate
     public void handleUserCreate(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        if (user.isNew()) { user.setEnabled(true); }
     }
 
     @HandleBeforeSave

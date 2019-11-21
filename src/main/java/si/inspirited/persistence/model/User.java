@@ -62,4 +62,8 @@ public class User implements UserDetails {
     public boolean isCredentialsNonExpired() {
         return isEnabled();
     }
+
+    public boolean isNew() {
+        return this.id == null;
+    }
 }
