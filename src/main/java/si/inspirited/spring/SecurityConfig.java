@@ -76,7 +76,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/users", "/login" , "/status").permitAll()
                 .antMatchers( "/contacts", "/groups" , "/group/{groupId}/contacts" , "/groups/{groupId}").hasAuthority("USER_PRIVILEGE")
                 .antMatchers("/groups").hasAuthority("EXPLORE_ALL_GROUPS_PRIVILEGE")
-
+                .antMatchers("/roles**", "/privileges**").denyAll()
                 .anyRequest().access("isAnonymous()")
 
                 .and()
