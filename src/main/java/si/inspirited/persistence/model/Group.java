@@ -19,5 +19,6 @@ public class Group implements Serializable {
 
     private String name;
 
-    private Long ownerId;
+    @ManyToOne
+    private User owner;
 }

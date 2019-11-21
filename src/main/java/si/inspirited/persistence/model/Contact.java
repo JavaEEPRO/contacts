@@ -24,5 +24,6 @@ public class Contact implements Serializable {
 
     private String address;
 
-    private Long ownerId;
+    @ManyToOne
+    private User owner;
 }

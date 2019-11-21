@@ -2,6 +2,8 @@ package si.inspirited.persistence.model;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -11,6 +13,7 @@ import java.util.Collection;
 @Entity
 @Data
 @NoArgsConstructor
+@RequiredArgsConstructor
 public class User implements UserDetails {
 
     @Id
@@ -22,8 +25,10 @@ public class User implements UserDetails {
 
     private String lastName;
 
+    @NonNull
     private String login;
 
+    @NonNull
     @Column(length = 60)
     private String password;
 

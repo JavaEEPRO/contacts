@@ -22,7 +22,6 @@ import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.rememberme.InMemoryTokenRepositoryImpl;
 import org.springframework.security.web.csrf.CsrfFilter;
-import org.springframework.web.context.request.RequestContextListener;
 import org.springframework.web.filter.RequestContextFilter;
 import si.inspirited.security.*;
 
@@ -73,7 +72,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilterAfter(requestContextFilter(), CsrfFilter.class)
                 .authorizeRequests()
 
-                .antMatchers("/users", "/login" , "/status").permitAll()
+                .antMatchers("/users", "/login" , "/status", "/h2-console").permitAll()
                 .antMatchers( "/contacts", "/groups" , "/group/{groupId}/contacts" , "/groups/{groupId}").hasAuthority("USER_PRIVILEGE")
                 .antMatchers("/groups").hasAuthority("EXPLORE_ALL_GROUPS_PRIVILEGE")
                 .antMatchers("/roles**", "/privileges**").denyAll()

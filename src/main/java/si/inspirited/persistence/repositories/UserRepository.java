@@ -8,4 +8,7 @@ import si.inspirited.persistence.model.User;
 public interface UserRepository extends PagingAndSortingRepository<User, Long> {
 
     User findByLogin(String login);
+
+    @Override
+    <S extends User> S save(S s);
 }
