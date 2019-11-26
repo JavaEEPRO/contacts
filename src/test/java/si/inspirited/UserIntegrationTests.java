@@ -1,5 +1,6 @@
 package si.inspirited;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,7 +12,12 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import si.inspirited.persistence.model.Role;
 import si.inspirited.persistence.model.User;
+import si.inspirited.persistence.repositories.RoleRepository;
 import si.inspirited.persistence.repositories.UserRepository;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -29,6 +35,9 @@ public class UserIntegrationTests {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    RoleRepository roleRepository;
 
     final String URL_USERS = "/users";
 
@@ -111,6 +120,17 @@ public class UserIntegrationTests {
         }
     }
 
+    @After
+    public void flushUserStorage() {
+        userRepository.deleteAll();
+        User testAdmin = new User("test", "test");
+        testAdmin.setFirstName("test");
+        testAdmin.setLastName("test");
+        testAdmin.setRoles(new ArrayList<>(Arrays.asList(roleRepository.findByName("ROLE_ADMIN"), roleRepository.findByName("ROLE_USER"))));
+        userRepository.save(testAdmin);
+    }
+
+    //
     private String getUserStub(String login) {
         return "{\"login\":\"" + login + "\",\"password\":\"password\"}";
     }

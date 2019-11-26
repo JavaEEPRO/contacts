@@ -33,7 +33,7 @@ public class CustomUserEventHandler {
         if (user.isNew()) {
             user.setEnabled(true);
             if (userRepository.count() == 1) {
-                user.setRoles(new ArrayList<>(Arrays.asList(roleRepository.findByName("ROLE_ADMIN"))));
+                user.setRoles(new ArrayList<>(Arrays.asList(roleRepository.findByName("ROLE_ADMIN"), roleRepository.findByName("ROLE_USER"))));
             } else {
                 user.setRoles(new ArrayList<>(Arrays.asList(roleRepository.findByName("ROLE_USER"))));
             }
