@@ -11,7 +11,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import si.inspirited.persistence.model.User;
 import si.inspirited.persistence.repositories.UserRepository;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -42,8 +41,8 @@ public class UserIntegrationTests {
     @Test
     public void addUser_whenCouldBeFoundInStorage_thenCorrect() {
         assertNotNull(mockMvc);
-
-        String userStub = "{\"login\":\"Name\",\"password\":\"password\"}";
+        String mockUserLogin = "Name";
+        String userStub = getUserStub(mockUserLogin);
         Long sizeOfStorageBeforeOperation = userRepository.count();
         try {
             mockMvc.perform(post(URL_USERS).content(userStub));
@@ -52,13 +51,14 @@ public class UserIntegrationTests {
         }
         Long sizeOfStorageAfterOperation = userRepository.count();
         assertTrue(sizeOfStorageBeforeOperation < sizeOfStorageAfterOperation);
-        User receivedFromStorage = userRepository.findByLogin("Name");
+        User receivedFromStorage = userRepository.findByLogin(mockUserLogin);
         assertNotNull(receivedFromStorage);
     }
 
     @Test
     public void addCoupleUsersWithTheSameNames_whenStoredOnlyTheFirst_thenCorrect() {
-        String oneOfCoupleWithDuplicatedLogin = "{\"login\":\"Duplicated\",\"password\":\"password\"}";
+        String duplicatedUsersLogin = "Duplicated";
+        String oneOfCoupleWithDuplicatedLogin = getUserStub(duplicatedUsersLogin);
         Long sizeOfStorageBeforeOperations = userRepository.count();
         try {
             mockMvc.perform(post(URL_USERS).content(oneOfCoupleWithDuplicatedLogin));
@@ -75,5 +75,9 @@ public class UserIntegrationTests {
 
         assertTrue(sizeOfStorageBeforeOperations < sizeOfStorageAfterFirstUserPosted);
         assertEquals(sizeOfStorageAfterFirstUserPosted, sizeOfStorageAfterSecondUserPosted);
+    }
+
+    private String getUserStub(String login) {
+        return "{\"login\":\"" + login + "\",\"password\":\"password\"}";
     }
 }
