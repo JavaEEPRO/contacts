@@ -12,6 +12,7 @@ import org.springframework.web.context.WebApplicationContext;
 import si.inspirited.persistence.model.User;
 import si.inspirited.persistence.repositories.UserRepository;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -29,6 +30,8 @@ public class UserIntegrationTests {
     @Autowired
     UserRepository userRepository;
 
+    final String URL_USERS = "/users";
+
     @Before
     public void setup() {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(this.webApplicationContext)
@@ -39,17 +42,38 @@ public class UserIntegrationTests {
     @Test
     public void addUser_whenCouldBeFoundInStorage_thenCorrect() {
         assertNotNull(mockMvc);
-        final String uri = "/users";
+
         String userStub = "{\"login\":\"Name\",\"password\":\"password\"}";
         Long sizeOfStorageBeforeOperation = userRepository.count();
         try {
-            mockMvc.perform(post(uri).content(userStub));
+            mockMvc.perform(post(URL_USERS).content(userStub));
         } catch (Exception e) {
             e.printStackTrace();
         }
         Long sizeOfStorageAfterOperation = userRepository.count();
-       assertTrue(sizeOfStorageBeforeOperation < sizeOfStorageAfterOperation);
-       User receivedFromStorage = userRepository.findByLogin("Name");
-       assertNotNull(receivedFromStorage);
+        assertTrue(sizeOfStorageBeforeOperation < sizeOfStorageAfterOperation);
+        User receivedFromStorage = userRepository.findByLogin("Name");
+        assertNotNull(receivedFromStorage);
+    }
+
+    @Test
+    public void addCoupleUsersWithTheSameNames_whenStoredOnlyTheFirst_thenCorrect() {
+        String oneOfCoupleWithDuplicatedLogin = "{\"login\":\"Duplicated\",\"password\":\"password\"}";
+        Long sizeOfStorageBeforeOperations = userRepository.count();
+        try {
+            mockMvc.perform(post(URL_USERS).content(oneOfCoupleWithDuplicatedLogin));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Long sizeOfStorageAfterFirstUserPosted = userRepository.count();
+        try {
+            mockMvc.perform(post(URL_USERS).content(oneOfCoupleWithDuplicatedLogin));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Long sizeOfStorageAfterSecondUserPosted = userRepository.count();
+
+        assertTrue(sizeOfStorageBeforeOperations < sizeOfStorageAfterFirstUserPosted);
+        assertEquals(sizeOfStorageAfterFirstUserPosted, sizeOfStorageAfterSecondUserPosted);
     }
 }
