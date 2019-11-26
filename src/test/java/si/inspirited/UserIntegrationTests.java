@@ -12,9 +12,6 @@ import org.springframework.web.context.WebApplicationContext;
 import si.inspirited.persistence.model.Role;
 import si.inspirited.persistence.model.User;
 import si.inspirited.persistence.repositories.UserRepository;
-
-import java.util.List;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
