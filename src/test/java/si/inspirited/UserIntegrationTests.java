@@ -101,15 +101,15 @@ public class UserIntegrationTests {
         registerCoupleRegularUsers("RegularUser");
         Iterable<User> allRegistered = userRepository.findAll();
         for (User user : allRegistered) {
-            if (!mockAdminName.equals(user.getLogin())) {
+            String currentUserName = user.getLogin();
+            if (!mockAdminName.equals(currentUserName)) {
                 boolean isUser = false;
                 for (Role role : user.getRoles()) {
-                    if ("USER_ROLE".equals(role.getAuthority())) {
+                    if ("ROLE_USER".equals(role.getAuthority())) {
                         isUser = true;
                     }
-                    assertTrue(isUser);
                 }
-
+                assertTrue(isUser);
             }
         }
     }
