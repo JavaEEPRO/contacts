@@ -14,6 +14,7 @@ import si.inspirited.persistence.model.Role;
 import si.inspirited.persistence.model.User;
 import si.inspirited.persistence.repositories.RoleRepository;
 import si.inspirited.persistence.repositories.UserRepository;
+import si.inspirited.security.ActiveUserStore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,7 +40,11 @@ public class UserIntegrationTests {
     @Autowired
     RoleRepository roleRepository;
 
-    final String URL_USERS = "/users";
+    @Autowired
+    ActiveUserStore activeUserStore;
+
+    private final String URL_USERS = "/users";
+    private final String URL_LOGIN = "/login";
 
     @Before
     public void setup() {
@@ -120,6 +125,28 @@ public class UserIntegrationTests {
         }
     }
 
+    @Test
+    public void loggingInAsAnonymous_whenFoundLoggedIn_thenCorrect() {
+        String someLogin = "SomeLogin";
+        String somePassword = "password";
+        String someUser = getUserStub(someLogin);
+        try {
+            mockMvc.perform(post(URL_USERS).content(someUser));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        int sizeBeforeLoginOperation = activeUserStore.users.size();
+        try {
+            mockMvc.perform(post(URL_LOGIN).param("username",someLogin).param("password", somePassword));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        int sizeAfterLoginOperation = activeUserStore.users.size();
+
+        assertTrue(sizeBeforeLoginOperation < sizeAfterLoginOperation);
+        assertTrue(activeUserStore.users.contains(someLogin));
+    }
+
     @After
     public void flushUserStorage() {
         userRepository.deleteAll();
@@ -131,11 +158,11 @@ public class UserIntegrationTests {
     }
 
     //
-    private String getUserStub(String login) {
+    private String getUserStub(final String login) {
         return "{\"login\":\"" + login + "\",\"password\":\"password\"}";
     }
 
-    private void registerCoupleRegularUsers(String prefixOfLogin) {
+    private void registerCoupleRegularUsers(final String prefixOfLogin) {
         for (int i = 0; i < 12; i++) {
             try {
                 mockMvc.perform(post(URL_USERS).content(getUserStub(prefixOfLogin + i)));
