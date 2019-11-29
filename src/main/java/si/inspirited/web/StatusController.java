@@ -23,10 +23,10 @@ public class StatusController {
         return getMessage(currentUser.getLogin());
     }
 
-    private String getMessage(String name) {
+    private String getMessage(String username) {
         boolean isAuthenticated;
-        if (name == null || "".equals(name)) { name = "null"; isAuthenticated = false; }
-        else { name = "\"" + name + "\""; isAuthenticated = true; }
-        return "{\"user\":" + name + ",\"isAuthenticated\":" + isAuthenticated + "}";
+        if (username == null || "".equals(username)) { username = "null"; isAuthenticated = false; }
+        else { username = "\"" + username + "\""; isAuthenticated = true; }
+        return "{\"username\":" + username + ",\"isAuthenticated\":" + isAuthenticated + "}";
     }
 }
