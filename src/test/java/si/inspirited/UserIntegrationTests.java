@@ -28,8 +28,7 @@ import java.util.Arrays;
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -180,10 +179,23 @@ public class UserIntegrationTests {
     }
 
     @Test
-    public void patchExistingUser_whenNewStateIsFoundStored_thenCorrect() {
+    public void patchExistingUser_whenNewStateIsFoundStored_thenCorrect() throws Exception {
+       getRegisteredAndAuthenticated(SOME_LOGIN)
+               .andExpect(cookie().exists("welcome"))
+               .andExpect(status().isOk());
 
-        // 2. patch data
-        // 3. check
+       User currentTestUser = userRepository.findByLogin(SOME_LOGIN);
+       Long id = currentTestUser.getId();
+       String mockUserForPatch = "{\"id\":" + id + ",\"firstName\":\"AnotherFirstName\",\"lastName\":\"AnotherLastName\",\"login\":\"AnotherLogin\",\"password\":\"password\",\"roles\":null,\"enabled\":true}";
+        try {
+            mockMvc.perform(patch(URL_USERS + "/" + id).content(mockUserForPatch));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        User patchedUser = userRepository.findByLogin("AnotherLogin");
+        assertEquals(id, patchedUser.getId());
+        assertNotEquals(currentTestUser.getLogin(), patchedUser.getLogin());
+        assertEquals("AnotherLogin", patchedUser.getLogin());
     }
 
     @After
