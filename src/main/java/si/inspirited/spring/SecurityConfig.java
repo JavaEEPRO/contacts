@@ -72,11 +72,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilterAfter(requestContextFilter(), CsrfFilter.class)
                 .authorizeRequests()
 
-                .antMatchers("/users", "/login" , "/status", "/h2-console").permitAll()
+                .antMatchers("/users", "/login**" , "/status", "/h2-console", "/").permitAll()
                 .antMatchers( "/contacts", "/groups" , "/group/{groupId}/contacts" , "/groups/{groupId}").hasAuthority("USER_PRIVILEGE")
                 .antMatchers("/groups").hasAuthority("EXPLORE_ALL_GROUPS_PRIVILEGE")
                 .antMatchers("/roles**", "/privileges**").denyAll()
-                .anyRequest().access("isAnonymous()")
+               // .anyRequest().access("isAnonymous()")
 
                 .and()
                 .formLogin()

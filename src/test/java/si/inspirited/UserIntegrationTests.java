@@ -138,30 +138,13 @@ public class UserIntegrationTests {
     @Test
     public void loggingInAsAnonymous_whenFoundLoggedIn_thenCorrect() {
         String someLogin = "SomeLogin";
-        String somePassword = "password";
-        String someUser = getUserStub(someLogin);
-        try {
-            mockMvc.perform(post(URL_USERS).content(someUser));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        int sizeBeforeLoginOperation = activeUserStore.users.size();
-        try {
-            mockMvc.perform(post(URL_LOGIN).param("username",someLogin).param("password", somePassword));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        int sizeAfterLoginOperation = activeUserStore.users.size();
-
-        assertTrue(sizeBeforeLoginOperation < sizeAfterLoginOperation);
+        getRegisteredAndAuthenticated(someLogin);
         assertTrue(activeUserStore.users.contains(someLogin));
     }
 
     @Test
     public void sendingGetStatus_whenServerRespondsWithIsAuthenticated_thenCorrect() throws UnsupportedEncodingException, JSONException {
         String someLogin = "SomeLogin";
-        String somePassword = "password";
-        String someUser = getUserStub(someLogin);
         MvcResult resultWhenNotAuthenticated = null;
         try {
             resultWhenNotAuthenticated = mockMvc.perform(get(URL_STATUS))
@@ -175,14 +158,8 @@ public class UserIntegrationTests {
 
         assertNotEquals(someLogin, new JSONObject(responseWhenNotAuthenticated).getString("username"));
         assertFalse(Boolean.parseBoolean(new JSONObject(responseWhenNotAuthenticated).getString("isAuthenticated")));
-
         try {
-            mockMvc.perform(post(URL_USERS).content(someUser));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
-            mockMvc.perform(post(URL_LOGIN).param("username",someLogin).param("password", somePassword))
+                    getRegisteredAndAuthenticated(someLogin)
                    .andExpect(cookie().exists("welcome"))
                    .andExpect(status().isOk());
         } catch (Exception e) {
@@ -205,6 +182,14 @@ public class UserIntegrationTests {
         assertTrue(isAuthenticated);
     }
 
+    @Test
+    public void patchExistingUser_whenNewStateIsFoundStored_thenCorrect() {
+        // 1. save user
+        //      1.1 - make "create user" call as common call for all tests inside class
+        // 2. patch data
+        // 3. check
+    }
+
     @After
     public void flushUserStorage() {
         userRepository.deleteAll();
@@ -216,6 +201,17 @@ public class UserIntegrationTests {
     }
 
     //
+    private ResultActions getRegisteredAndAuthenticated(String username) {
+        ResultActions res = null;
+        try {
+            mockMvc.perform(post(URL_USERS).content(getUserStub(username)));
+            res = mockMvc.perform(post(URL_LOGIN).param("username",username).param("password", "password"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
     private String getUserStub(final String login) {
         return "{\"login\":\"" + login + "\",\"password\":\"password\"}";
     }
