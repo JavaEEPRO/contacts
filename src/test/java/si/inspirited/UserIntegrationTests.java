@@ -2,7 +2,6 @@ package si.inspirited;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONString;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,6 +55,8 @@ public class UserIntegrationTests {
     private final String URL_LOGIN = "/login";
     private final String URL_STATUS = "/status";
 
+    private final String SOME_LOGIN = "SomeLogin";
+
     @Before
     public void setup() {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(this.webApplicationContext)
@@ -66,8 +67,7 @@ public class UserIntegrationTests {
     @Test
     public void addUser_whenCouldBeFoundInStorage_thenCorrect() {
         assertNotNull(mockMvc);
-        String mockUserLogin = "Name";
-        String userStub = getUserStub(mockUserLogin);
+        String userStub = getUserStub(SOME_LOGIN);
         Long sizeOfStorageBeforeOperation = userRepository.count();
         try {
             mockMvc.perform(post(URL_USERS).content(userStub));
@@ -76,14 +76,13 @@ public class UserIntegrationTests {
         }
         Long sizeOfStorageAfterOperation = userRepository.count();
         assertTrue(sizeOfStorageBeforeOperation < sizeOfStorageAfterOperation);
-        User receivedFromStorage = userRepository.findByLogin(mockUserLogin);
+        User receivedFromStorage = userRepository.findByLogin(SOME_LOGIN);
         assertNotNull(receivedFromStorage);
     }
 
     @Test
     public void addCoupleUsersWithTheSameNames_whenStoredOnlyTheFirst_thenCorrect() {
-        String duplicatedUsersLogin = "Duplicated";
-        String oneOfCoupleWithDuplicatedLogin = getUserStub(duplicatedUsersLogin);
+        String oneOfCoupleWithDuplicatedLogin = getUserStub(SOME_LOGIN);
         Long sizeOfStorageBeforeOperations = userRepository.count();
         try {
             mockMvc.perform(post(URL_USERS).content(oneOfCoupleWithDuplicatedLogin));
@@ -137,14 +136,12 @@ public class UserIntegrationTests {
 
     @Test
     public void loggingInAsAnonymous_whenFoundLoggedIn_thenCorrect() {
-        String someLogin = "SomeLogin";
-        getRegisteredAndAuthenticated(someLogin);
-        assertTrue(activeUserStore.users.contains(someLogin));
+        getRegisteredAndAuthenticated(SOME_LOGIN);
+        assertTrue(activeUserStore.users.contains(SOME_LOGIN));
     }
 
     @Test
     public void sendingGetStatus_whenServerRespondsWithIsAuthenticated_thenCorrect() throws UnsupportedEncodingException, JSONException {
-        String someLogin = "SomeLogin";
         MvcResult resultWhenNotAuthenticated = null;
         try {
             resultWhenNotAuthenticated = mockMvc.perform(get(URL_STATUS))
@@ -156,10 +153,10 @@ public class UserIntegrationTests {
         }
         String responseWhenNotAuthenticated = resultWhenNotAuthenticated != null? resultWhenNotAuthenticated.getResponse().getContentAsString() : "";
 
-        assertNotEquals(someLogin, new JSONObject(responseWhenNotAuthenticated).getString("username"));
+        assertNotEquals(SOME_LOGIN, new JSONObject(responseWhenNotAuthenticated).getString("username"));
         assertFalse(Boolean.parseBoolean(new JSONObject(responseWhenNotAuthenticated).getString("isAuthenticated")));
         try {
-                    getRegisteredAndAuthenticated(someLogin)
+                    getRegisteredAndAuthenticated(SOME_LOGIN)
                    .andExpect(cookie().exists("welcome"))
                    .andExpect(status().isOk());
         } catch (Exception e) {
@@ -178,14 +175,13 @@ public class UserIntegrationTests {
         String responseWhenAuthenticated = resultWhenAuthenticated != null? resultWhenAuthenticated.getResponse().getContentAsString() : "";
         String usernameFromResponse = new JSONObject(responseWhenAuthenticated).getString("username");
         boolean isAuthenticated = Boolean.parseBoolean(new JSONObject(responseWhenAuthenticated).getString("isAuthenticated"));
-        assertEquals(someLogin, usernameFromResponse);
+        assertEquals(SOME_LOGIN, usernameFromResponse);
         assertTrue(isAuthenticated);
     }
 
     @Test
     public void patchExistingUser_whenNewStateIsFoundStored_thenCorrect() {
-        // 1. save user
-        //      1.1 - make "create user" call as common call for all tests inside class
+
         // 2. patch data
         // 3. check
     }
