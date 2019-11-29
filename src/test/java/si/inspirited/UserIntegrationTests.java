@@ -1,5 +1,8 @@
 package si.inspirited;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONString;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -8,6 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import si.inspirited.persistence.model.Role;
@@ -16,14 +22,17 @@ import si.inspirited.persistence.repositories.RoleRepository;
 import si.inspirited.persistence.repositories.UserRepository;
 import si.inspirited.security.ActiveUserStore;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @RunWith(SpringRunner.class)
@@ -45,6 +54,7 @@ public class UserIntegrationTests {
 
     private final String URL_USERS = "/users";
     private final String URL_LOGIN = "/login";
+    private final String URL_STATUS = "/status";
 
     @Before
     public void setup() {
@@ -145,6 +155,54 @@ public class UserIntegrationTests {
 
         assertTrue(sizeBeforeLoginOperation < sizeAfterLoginOperation);
         assertTrue(activeUserStore.users.contains(someLogin));
+    }
+
+    @Test
+    public void sendingGetStatus_whenServerRespondsWithIsAuthenticated_thenCorrect() throws UnsupportedEncodingException, JSONException {
+        String someLogin = "SomeLogin";
+        String somePassword = "password";
+        String someUser = getUserStub(someLogin);
+        MvcResult resultWhenNotAuthenticated = null;
+        try {
+            resultWhenNotAuthenticated = mockMvc.perform(get(URL_STATUS))
+                                         .andDo(MockMvcResultHandlers.print())
+                                         .andExpect(cookie().doesNotExist("welcome"))
+                                         .andReturn();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        String responseWhenNotAuthenticated = resultWhenNotAuthenticated != null? resultWhenNotAuthenticated.getResponse().getContentAsString() : "";
+
+        assertNotEquals(someLogin, new JSONObject(responseWhenNotAuthenticated).getString("username"));
+        assertFalse(Boolean.parseBoolean(new JSONObject(responseWhenNotAuthenticated).getString("isAuthenticated")));
+
+        try {
+            mockMvc.perform(post(URL_USERS).content(someUser));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            mockMvc.perform(post(URL_LOGIN).param("username",someLogin).param("password", somePassword))
+                   .andExpect(cookie().exists("welcome"))
+                   .andExpect(status().isOk());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        MvcResult resultWhenAuthenticated = null;
+        try {
+            resultWhenAuthenticated = mockMvc
+                    .perform(get(URL_STATUS))
+                    .andDo(MockMvcResultHandlers.print())
+                    .andExpect(status().isOk())
+                    .andReturn();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        String responseWhenAuthenticated = resultWhenAuthenticated != null? resultWhenAuthenticated.getResponse().getContentAsString() : "";
+        String usernameFromResponse = new JSONObject(responseWhenAuthenticated).getString("username");
+        boolean isAuthenticated = Boolean.parseBoolean(new JSONObject(responseWhenAuthenticated).getString("isAuthenticated"));
+        assertEquals(someLogin, usernameFromResponse);
+        assertTrue(isAuthenticated);
     }
 
     @After
