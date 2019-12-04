@@ -22,8 +22,7 @@ import si.inspirited.persistence.repositories.UserRepository;
 import si.inspirited.security.ActiveUserStore;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.*;
@@ -53,6 +52,7 @@ public class UserIntegrationTests {
     private final String URL_USERS = "/users";
     private final String URL_LOGIN = "/login";
     private final String URL_STATUS = "/status";
+    private final String URL_LOGOUT = "/logout";
 
     private final String SOME_LOGIN = "SomeLogin";
 
@@ -186,7 +186,7 @@ public class UserIntegrationTests {
 
        User currentTestUser = userRepository.findByLogin(SOME_LOGIN);
        Long id = currentTestUser.getId();
-       String mockUserForPatch = "{\"id\":" + id + ",\"firstName\":\"AnotherFirstName\",\"lastName\":\"AnotherLastName\",\"login\":\"AnotherLogin\",\"password\":\"password\",\"roles\":null,\"enabled\":true}";
+       String mockUserForPatch = "{\"id\":" + id + ",\"firstName\":\"AnotherFirstName\",\"lastName\":\"AnotherLastName\",\"login\":\"AnotherLogin\",\"password\":\"password\"}";
         try {
             mockMvc.perform(patch(URL_USERS + "/" + id).content(mockUserForPatch));
         } catch (Exception e) {
@@ -196,6 +196,59 @@ public class UserIntegrationTests {
         assertEquals(id, patchedUser.getId());
         assertNotEquals(currentTestUser.getLogin(), patchedUser.getLogin());
         assertEquals("AnotherLogin", patchedUser.getLogin());
+    }
+
+    @Test
+    public void patchExistingUserWithTryingToChangeRoles_whenAdminCanEditRoles_AndRegularUserCanNot_thenCorrect() throws Exception {
+        try {
+            mockMvc.perform(post(URL_USERS).content(getUserStub("OffBeatUser")));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        getRegisteredAndAuthenticated(SOME_LOGIN)                       //regular user session
+                .andExpect(cookie().exists("welcome"))
+                .andExpect(status().isOk());
+        User regularUserBeforePatch = userRepository.findByLogin(SOME_LOGIN);
+        Long regularUserId = regularUserBeforePatch.getId();
+        assertNotNull(regularUserBeforePatch.getRoles());
+        assertTrue(regularUserBeforePatch.getRoles().stream().anyMatch((role)->"ROLE_USER".equals(role.getAuthority())));
+        assertFalse(regularUserBeforePatch.getRoles().stream().anyMatch((role)->"ROLE_ADMIN".equals(role.getAuthority())));
+        String regularUserForPatch = "{\"id\":" + regularUserId + ",\"firstName\":\"RegularUserFirstName\",\"lastName\":\"RegularUserLastName\",\"login\":\"RegularUserLogin\",\"password\":\"password\",\"roles\":\"null\"}";
+        try {
+            mockMvc.perform(patch(URL_USERS + "/" + regularUserId).content(regularUserForPatch));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        User patchedRegularUser = userRepository.findById(regularUserId).get();
+        assertNotNull(patchedRegularUser.getRoles());
+        assertTrue(patchedRegularUser.getRoles().stream().anyMatch((role)->"ROLE_USER".equals(role.getAuthority())));
+        assertFalse(patchedRegularUser.getRoles().stream().anyMatch((role)->"ROLE_ADMIN".equals(role.getAuthority())));
+        for (Role role : regularUserBeforePatch.getRoles()) {
+            assertTrue(patchedRegularUser.getRoles().stream().anyMatch((r)->(role.getAuthority()).equals(r.getAuthority())));
+        }
+        try {
+            mockMvc.perform(get(URL_LOGOUT))                           //logging out as reg. user
+                    .andExpect(cookie().doesNotExist("welcome"))
+                    .andExpect(status().isOk());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }                                                              //admin session
+        mockMvc.perform(post(URL_LOGIN).param("username","test").param("password", "test"))
+                .andExpect(cookie().exists("welcome"))
+                .andExpect(status().isOk());
+        User adminBeforePatch = userRepository.findByLogin("test");
+        Long adminId = adminBeforePatch.getId();
+        assertNotNull(adminBeforePatch.getRoles());
+        assertTrue(adminBeforePatch.getRoles().stream().anyMatch((role)->"ROLE_ADMIN".equals(role.getAuthority())));
+        String adminForPatch = "{\"id\":" + adminId + ",\"firstName\":\"AdminFirstName\",\"lastName\":\"AdminLastName\",\"login\":\"AdminLogin\",\"password\":\"password\",\"roles\":null}";
+        try {
+            mockMvc.perform(patch(URL_USERS + "/" + adminId).content(adminForPatch));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        User patchedAdmin = userRepository.findByLogin("AdminLogin");
+        assertNotNull(patchedAdmin.getRoles());
+        assertFalse(patchedAdmin.getRoles().stream().anyMatch((role)->"ROLE_ADMIN".equals(role.getAuthority())));
     }
 
     @After

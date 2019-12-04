@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.annotation.HandleBeforeCreate;
 import org.springframework.data.rest.core.annotation.HandleBeforeSave;
 import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import si.inspirited.persistence.model.Role;
@@ -11,8 +13,11 @@ import si.inspirited.persistence.model.User;
 import si.inspirited.persistence.repositories.RoleRepository;
 import si.inspirited.persistence.repositories.UserRepository;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Optional;
 
 @Component
 @RepositoryEventHandler
@@ -26,6 +31,9 @@ public class CustomUserEventHandler {
 
     @Autowired
     private RoleRepository roleRepository;
+
+//    @Autowired
+//    IAuthenticationFacade authenticationFacade;
 
     @HandleBeforeCreate
     public void handleUserCreate(User user) {
@@ -48,6 +56,13 @@ public class CustomUserEventHandler {
         }
         else {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
+        Optional<User> currentUser = userRepository.findById(user.getId());
+        boolean isAdmin = false;
+        if (currentUser.get().getRoles() != null)
+        {isAdmin = currentUser.orElse(new User()).getRoles().stream().anyMatch((role)->"ROLE_ADMIN".equals(role.getAuthority()));}
+        if (!isAdmin) {
+            user.setRoles(currentUser.get().getRoles());
         }
     }
 }
